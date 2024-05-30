@@ -31,8 +31,19 @@ func main() {
 		}
 		// Handle EOF, if necessary
 	}
-	if strings.HasPrefix(string(buf), "GET / HTTP/1.1") {
+	request := string(buf)
+	requestSegments := strings.Split(request, "\r\n")
+	requestPath := requestSegments[0]
+	requestPath = strings.TrimSpace(requestPath)
+	requestPath = strings.Split(request, " ")[1]
+	fmt.Println(requestPath)
+
+	if requestPath == "/" {
 		conn.Write([]byte("HTTP/1.1 200 OK\r\n\r\n"))
+	} else if strings.HasPrefix(requestPath, "/echo/") {
+		echoStr := strings.TrimPrefix(requestPath, "/echo/")
+		response := fmt.Sprintf("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", len(echoStr), echoStr)
+		conn.Write([]byte(response))
 	} else {
 		conn.Write([]byte("HTTP/1.1 404 Not Found\r\n\r\n"))
 	}
